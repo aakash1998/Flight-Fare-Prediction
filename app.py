@@ -7,7 +7,7 @@ import pandas
 from gevent.pywsgi import  WSGIServer
 
 app = Flask(__name__)
-model = open("final_model.pickle", "rb")
+model = open('final_model_flight.pickle' , 'rb')
 rf = pickle.load(model)
 
 @app.route("/", methods=["GET", "POST"])
@@ -304,7 +304,7 @@ def predict():
                 d_Chennai = 0
                 d_Mumbai = 1
 
-            prediction = model.pre([[
+            prediction = rf.predict([[
                 Total_stops,
                 Journey_Day,
                 Journey_Month,
