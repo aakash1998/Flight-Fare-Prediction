@@ -4,7 +4,7 @@ from flask_cors import cross_origin
 import pickle
 import sklearn
 import pandas
-from gevent.pywsgi import  WSGIServer
+#from gevent.pywsgi import  WSGIServer
 
 app = Flask(__name__)
 model = open('final_model_flight.pickle' , 'rb')
