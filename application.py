@@ -3,54 +3,68 @@ from flask import request, render_template, Flask
 from flask_cors import cross_origin
 import pickle
 import sklearn
-#import scikit-learn
+from logger_class import getLog
 import pandas
-#from gevent.pywsgi import  WSGIServer
 
-app = Flask(__name__)
-model = open('final_model_flight.pickle' , 'rb')
+logger = getLog("prediction.py")
+
+
+logger.info("Initializaing the flask app")
+application = Flask(__name__) #defining the app
+logger.info("Loading the Final Model")
+model = open('final_model_flight.pickle' , 'rb') #loading the model
 rf = pickle.load(model)
 
-@app.route("/", methods=["GET", "POST"])
+@application.route("/", methods=["GET", "POST"])
 @cross_origin()
 def home():
+    logger.info("Home Page Route")
     return render_template("home.html")
 
 
-@app.route("/predict", methods=["GET", "POST"])
+
+@application.route("/predict", methods=["GET", "POST"])
 @cross_origin()
+
 def predict():
     try:
+
         if request.method == "POST":
 
             # Departure
             date_dep = request.form['Dep_Time']
-
+            logger.info("Reading the departure time"  + str(date_dep))
             # Deperature Day and Month
             Journey_Day = int(pd.to_datetime(date_dep, format="%Y-%m-%dT%H:%M").day)
+            logger.info("Reding the Journey Day" + str(Journey_Day))
             Journey_Month = int(pd.to_datetime(date_dep, format="%Y-%m-%dT%H:%M").month)
-
+            logger.info("Reading the Journey Month" + str(Journey_Month))
             # Deperature Time
             Dep_hour = int(pd.to_datetime(date_dep, format="%Y-%m-%dT%H:%M").hour)
+            logger.info("Reading the departure hour" + str(Dep_hour))
             Dep_min = int(pd.to_datetime(date_dep, format="%Y-%m-%dT%H:%M").minute)
-
+            logger.info("Reading the departure minute" + str(Dep_min))
             # Arrival
             date_arr = request.form['Arrival_Time']
-
+            logger.info("Reading the arrival date" + str(date_arr))
             # Arrival Time
             Arrival_hour = int(pd.to_datetime(date_arr, format="%Y-%m-%dT%H:%M").hour)
+            logger.info("Reading the arrival hour" + str(Arrival_hour))
             Arrival_min = int(pd.to_datetime(date_arr, format="%Y-%m-%dT%H:%M").minute)
-
+            logger.info("Reading the arrival min" + str(Arrival_min))
             # Duration of Flight
             dur_hour = abs(Arrival_hour - Dep_hour)
+            logger.info("Calculating the duration in hours" + str(dur_hour))
             dur_min = abs(Arrival_min - Dep_min)
+            logger.info("Calculating the duration in minutes" + str(dur_min))
 
             # Total Stops
             Total_stops = int(request.form['stops'])
-
+            logger.info("Reading the total stops" + str(Total_stops))
             # Airline Selection
             #Air Asia = 0
             airline = request.form['airline']
+            logger.info("Reading the airline name" + str(airline))
             if airline == 'IndiGo':
                 IndiGo = 1
                 Air_India = 0
@@ -223,7 +237,7 @@ def predict():
             # Source
             #Banglore = 0
             source = request.form['Source']
-
+            logger.info("Reading the source" + str(source))
             if(source == 'Kolkata'):
                 s_Kolkata = 1
                 s_Delhi = 0
@@ -257,6 +271,7 @@ def predict():
             # Destination
             #Banglore = 0
             destination = request.form['Destination']
+            logger.info("Reading the destination" + str(destination))
             if(destination == 'New Delhi'):
                 d_New_Delhi = 1
                 d_Kolkata = 0
@@ -332,15 +347,17 @@ def predict():
             ]])
 
         output = round(prediction[0] , 0)
-
+        logger.info("Reading the output" + str(output))
         return render_template("home.html", prediction_text="Your Flight Price is Rs. {}".format(output))
-
+        logger.info("Printing the output on the home page")
         return render_template("home.html")
+        logger.info("Output Printed")
     except Exception as e:
+        logger.info("Exception raised :" + str(e))
         print(str(e))
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    application.run(debug=True)
     #http_server = WSGIServer(('' , 5000) , app)
     #http_server.serve_forever()
